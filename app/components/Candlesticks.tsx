@@ -1,6 +1,6 @@
 'use client'
 
-import { createChart, ColorType, CandlestickSeries } from 'lightweight-charts';
+import { createChart, ColorType, CandlestickSeries, ISeriesApi, IChartApi } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 
 interface CandlestickData {
@@ -35,46 +35,28 @@ const CandlestickChart = ({
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current?.clientWidth });
-    };
-
+      
     if (!chartContainerRef.current) return;
 
-    // const chart = createChart(chartContainerRef.current, {
-    //   layout: {
-    //     background: { type: ColorType.Solid, color: backgroundColor },
-    //     textColor: '#000000',
-    //   },
-    //   width: chartContainerRef.current.clientWidth,
-    //   height: 500,
-    //   grid: {
-    //     vertLines: { color: '#e1e1e1' },
-    //     horzLines: { color: '#e1e1e1' },
-    //   },
-    //   rightPriceScale: {
-    //     borderVisible: false,
-    //   },
-    //   timeScale: {
-    //     timeVisible: true,
-    //     secondsVisible: false,
-    //   },
-    // });
+    const handleResize = () => {
+      chart.applyOptions({ width: chartContainerRef.current?.clientWidth, height: chartContainerRef.current?.clientHeight });
+    };
+
 
     const chart = createChart(chartContainerRef.current, {
         layout: {
           background: { type: ColorType.Solid, color: backgroundColor },
-          textColor: '#d1d5db', // Lighter text color for better contrast
+          textColor: '#d1d5db',
         },
         width: chartContainerRef.current.clientWidth,
         height: 700,
         grid: {
           vertLines: {
-            color: 'rgba(75, 85, 99, 0.2)', // Darker gray with transparency
-            style: 1, // Dotted line style
+            color: 'rgba(75, 85, 99, 0.2)', 
+            style: 1, 
           },
           horzLines: {
-            color: 'rgba(75, 85, 99, 0.2)', // Matching vertical lines
+            color: 'rgba(17, 109, 238, 0.2)',
             style: 1,
           },
         },
@@ -88,9 +70,10 @@ const CandlestickChart = ({
         timeScale: {
           timeVisible: true,
           secondsVisible: false,
-          borderVisible: false, // Remove border
+          borderVisible: false, 
         },
-      });
+    });
+
 
     let candlestickSeries = chart.addSeries(CandlestickSeries, { 
       upColor,
@@ -99,17 +82,17 @@ const CandlestickChart = ({
       wickUpColor,
       wickDownColor,
     });
-    
-    candlestickSeries.setData(data);
-    chart.timeScale().fitContent();
 
+
+    candlestickSeries.setData(data as any);
     window.addEventListener('resize', handleResize);
 
     return () => {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [data, backgroundColor, upColor, downColor, wickUpColor, wickDownColor]);
+  }, [data, upColor, downColor, wickUpColor, wickDownColor]);
+
 
   return <div ref={chartContainerRef} className="w-full" />;
 };

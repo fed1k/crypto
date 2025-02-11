@@ -21,7 +21,13 @@ export default function TradingView() {
   const [data, setData] = useState<Kline[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [wsInstance, setWsInstance] = useState<WebSocket | null>(null);
 
+
+  /**
+   * here we fetch the historically data so that the chart will not be empty
+   * we can extract this into api hook
+   */
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -35,9 +41,9 @@ export default function TradingView() {
         high: parseFloat(d[2]),
         low: parseFloat(d[3]),
         close: parseFloat(d[4]),
-      }));
+      }))
+      .sort((a: Kline, b: Kline) => a.time - b.time);
 
-      console.log(formattedData)
 
       setData(formattedData);
       setError('');
@@ -53,9 +59,85 @@ export default function TradingView() {
     fetchData();
   }, [symbol, interval]);
 
+   
+
+  /**
+   * here we connect to the websocket so that we can get the live data
+   */
+  useEffect(() => {
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout;
+  
+    const connectWebSocket = () => {
+      
+        ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@kline_${interval}`);
+  
+        ws.onopen = () => {
+          console.log('WebSocket connected');
+          setError('');
+        };
+  
+        ws.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          const kline = message.k;
+          const newKline: Kline = {
+            time: kline.t / 1000,
+            open: parseFloat(kline.o),
+            high: parseFloat(kline.h),
+            low: parseFloat(kline.l),
+            close: parseFloat(kline.c),
+          };
+  
+          setData(prev => {
+           /**
+            * here we merge the historical data with the live data
+            */
+            let newData = [...prev];
+            const existingIndex = newData.findIndex(d => d.time === newKline.time);
+            
+            if (existingIndex > -1) {
+              newData[existingIndex] = newKline;
+            } else {
+              newData = [...prev, newKline]
+              .sort((a, b) => a.time - b.time);
+            }
+            
+            return newData.slice(-1000); 
+          });
+        };
+
+        
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
+  
+        ws.onclose = (event) => {
+          if (event.wasClean) {
+            console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+          } else {
+            console.error('Connection abruptly closed');
+            
+            reconnectTimeout = setTimeout(connectWebSocket, 3000);
+            
+          }
+        };
+      }
+      
+      
+    setLoading(false)
+    connectWebSocket();
+  
+    return () => {
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+      clearTimeout(reconnectTimeout);
+    }
+  }, [symbol, interval ]);
+
   return (
     <div className="p-4 bg-black/50 backdrop-blur-lg rounded-lg shadow-md mt-5 relative overflow-hidden">
-    {/* Controls with higher z-index */}
     <div className="flex items-center gap-4 mb-4 relative z-10">
       <div className="flex items-center gap-2">
         <Select.Root value={symbol} onValueChange={setSymbol}>
@@ -96,7 +178,7 @@ export default function TradingView() {
           <Select.Content className="bg-gray-900/95 backdrop-blur-sm rounded-md shadow-xl border border-gray-800">
             <Select.ScrollUpButton className="text-gray-400 flex items-center justify-center h-6" />
             <Select.Viewport className="p-1">
-              {['1m', '5m', '15m', '1h', '4h', '1d', '1w'].map((int) => (
+              {['1s', '1m', '5m', '15m', '1h', '4h', '1d', '1w'].map((int) => (
                 <Select.Item 
                   key={int} 
                   value={int}
@@ -113,7 +195,6 @@ export default function TradingView() {
       </Select.Root>
     </div>
 
-    {/* Chart with lower z-index */}
     <div className="relative z-0">
       {loading ? (
         <div className="h-96 flex items-center justify-center text-gray-400">Loading chart...</div>
