@@ -1,13 +1,18 @@
 import { Suspense } from "react"
 import { getBinancePrice } from "@/lib/binance"
-// import { TradingView } from "./trading-view"
+import CandlestickChart from "@/app/components/Candlesticks"
 import { Skeleton } from "@/components/ui/skeleton"
+import TradingView from "./trading-view"
 
 interface TradingPageProps {
   searchParams: { pair?: string }
 }
 
 export const revalidate = 60 // Обновление каждую минуту
+
+//build a trading view component 
+
+
 
 export default async function TradingPage({ searchParams }: TradingPageProps) {
   const symbol = searchParams.pair || "BTCUSDT"
@@ -16,7 +21,8 @@ export default async function TradingPage({ searchParams }: TradingPageProps) {
   return (
     <div className="container-fluid max-w-[1920px] px-4">
       <Suspense fallback={<Skeleton className="h-[800px] w-full" />}>
-        {/* <TradingView symbol={symbol} initialData={initialData} /> */}
+        {/* <CandlestickChart data={initialData} /> */}
+        <TradingView />
       </Suspense>
     </div>
   )
