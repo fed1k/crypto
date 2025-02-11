@@ -21,5 +21,20 @@ export const formatPercent = (percent) => {
   return parseFloat(percent).toFixed(2);  // Ensure only two decimal places
 };
 
+export const formatDateTime = () => {
+  const options = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true, // 12-hour format
+  };
+  const currentDate = new Date();
+  return currentDate.toLocaleString('en-US', options)
+};
+
 
 
