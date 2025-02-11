@@ -15,6 +15,8 @@ export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -25,9 +27,15 @@ export default function LoginPage() {
     const password = formData.get("password") as string
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const response = await signInWithEmailAndPassword(auth, email, password);
+      const user = response.user
+      // login({email: user.email, uid: user.uid})
+      sessionStorage.setItem("user", JSON.stringify({email: user.email, uid: user.uid}))
       router.push("/")
     } catch (error) {
+      if (error?.code === "auth/invalid-credential") {
+        setErrorMessage("Неверный email или пароль")
+      }
       toast({
         variant: "destructive",
         title: "Ошибка",
@@ -81,6 +89,7 @@ export default function LoginPage() {
                   <Label htmlFor="password">Пароль</Label>
                   <Input id="password" type="password" name="password" disabled={isLoading} required />
                 </div>
+                {errorMessage ? <p className="text-red-500">{errorMessage}</p> : <></>}
                 <Button disabled={isLoading} className="w-full">
                   {isLoading ? (
                     <div className="mr-2 h-4 w-4 animate-spin" />

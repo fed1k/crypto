@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { UserCircle, Menu } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 const navigation = [
   { name: "Рынки", href: "/markets" }, // Добавлена новая ссылка
@@ -16,6 +16,7 @@ const navigation = [
   { name: "P2P", href: "/p2p" },
   { name: "Поддержка", href: "/support" },
   { name: "Отзывы", href: "/reviews" },
+  { name: "ФАК", href: "/faq" },
 ]
 
 const userNavigation = [
@@ -33,9 +34,15 @@ export function Header() {
   const pathname = usePathname()
   const isAuthPage = pathname.startsWith("/auth")
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState({ email: "", uid: "" })
+
+
+  useEffect(() => {
+    const tempUser = sessionStorage.getItem("user")
+    setUser(JSON.parse(tempUser))
+  }, [])
 
   if (isAuthPage) return null
-
   return (
     <header className="border-b border-border/40 backdrop-blur-xl bg-background/95 fixed w-full top-0 z-50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
@@ -51,9 +58,8 @@ export function Header() {
             <Link
               key={item.name}
               href={item.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === item.href ? "text-primary" : "text-muted-foreground"
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary ${pathname === item.href ? "text-primary" : "text-muted-foreground"
+                }`}
             >
               {item.name}
             </Link>
@@ -75,9 +81,8 @@ export function Header() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setIsOpen(false)}
-                    className={`text-sm font-medium transition-colors hover:text-primary ${
-                      pathname === item.href ? "text-primary" : "text-muted-foreground"
-                    }`}
+                    className={`text-sm font-medium transition-colors hover:text-primary ${pathname === item.href ? "text-primary" : "text-muted-foreground"
+                      }`}
                   >
                     {item.name}
                   </Link>
@@ -88,28 +93,32 @@ export function Header() {
         </div>
 
         <div className="flex flex-1 justify-end gap-2">
-          <Button variant="ghost" asChild>
-            <Link href="/auth/login">Вход</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/auth/register">Регистрация</Link>
-          </Button>
-          {/* <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <UserCircle className="h-5 w-5" />
+
+          {!user ?
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/auth/login">Вход</Link>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {userNavigation.map((item) => (
-                <DropdownMenuItem key={item.name} asChild>
-                  <Link href={item.href} className="w-full">
-                    {item.name}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu> */}
+              <Button asChild>
+                <Link href="/auth/register">Регистрация</Link>
+
+              </Button></> :
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <UserCircle className="h-7 w-7" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {userNavigation.map((item) => (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <Link href={item.href} className="w-full">
+                      {item.name}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>}
         </div>
       </nav>
     </header>
