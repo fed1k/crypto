@@ -1,10 +1,10 @@
 'use client'
 
-import { createChart, ColorType, CandlestickSeries, ISeriesApi, IChartApi } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, IRange, CandlestickSeries, Time } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 
 interface CandlestickData {
-  time: string | number;
+  time: number;
   open: number;
   high: number;
   low: number;
@@ -33,66 +33,79 @@ const CandlestickChart = ({
   } = {}
 }: CandlestickChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const visibleTimeRangeRef = useRef<IRange<Time> | null>(null);
+  const isUserZoomedRef = useRef(false);
 
   useEffect(() => {
-      
     if (!chartContainerRef.current) return;
 
-    const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current?.clientWidth, height: chartContainerRef.current?.clientHeight });
-    };
-
-
     const chart = createChart(chartContainerRef.current, {
-        layout: {
-          background: { type: ColorType.Solid, color: backgroundColor },
-          textColor: '#d1d5db',
-        },
-        width: chartContainerRef.current.clientWidth,
-        height: 700,
-        grid: {
-          vertLines: {
-            color: 'rgba(75, 85, 99, 0.2)', 
-            style: 1, 
-          },
-          horzLines: {
-            color: 'rgba(17, 109, 238, 0.2)',
-            style: 1,
-          },
-        },
-        rightPriceScale: {
-          borderVisible: false,
-          scaleMargins: {
-            top: 0.1,
-            bottom: 0.1,
-          },
-        },
-        timeScale: {
-          timeVisible: true,
-          secondsVisible: false,
-          borderVisible: false, 
-        },
+      layout: {
+        background: { type: ColorType.Solid, color: backgroundColor },
+        textColor: '#d1d5db',
+      },
+      width: chartContainerRef.current.clientWidth,
+      height: 700,
+      grid: {
+        vertLines: { color: 'rgba(75, 85, 99, 0.2)', style: 1 },
+        horzLines: { color: 'rgba(17, 109, 238, 0.2)', style: 1 },
+      },
+      rightPriceScale: {
+        borderVisible: false,
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+      },
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+        borderVisible: false,
+      },
     });
 
+    chartRef.current = chart;
 
-    let candlestickSeries = chart.addSeries(CandlestickSeries, { 
+    const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor,
       downColor,
-      borderVisible: false,
       wickUpColor,
       wickDownColor,
+      borderVisible: false,
     });
 
+    seriesRef.current = candlestickSeries;
 
-    candlestickSeries.setData(data as any);
-    window.addEventListener('resize', handleResize);
+    chart.timeScale().subscribeVisibleTimeRangeChange((timeRange) => {
+      if (timeRange) {
+        visibleTimeRangeRef.current = timeRange;
+        const latestTime = data[data.length - 1]?.time;
+        if (latestTime) {
+          const threshold = (timeRange.to - timeRange.from) * 0.02;
+          isUserZoomedRef.current = !(latestTime - timeRange.to <= threshold);
+        }
+      }
+    });
 
     return () => {
-      window.removeEventListener('resize', handleResize);
       chart.remove();
+      chartRef.current = null;
     };
-  }, [data, upColor, downColor, wickUpColor, wickDownColor]);
+  }, [backgroundColor, upColor, downColor, wickUpColor, wickDownColor]);
 
+  useEffect(() => {
+    if (seriesRef.current && chartRef.current) {
+      const currentTimeRange = chartRef.current.timeScale().getVisibleRange();
+      const newLastTime = data[data.length - 1]?.time;
+
+      seriesRef.current.setData(data);
+
+      if (currentTimeRange && isUserZoomedRef.current) {
+        chartRef.current.timeScale().setVisibleRange(currentTimeRange);
+      } else if (newLastTime) {
+        chartRef.current.timeScale().scrollToRealTime();
+      }
+    }
+  }, [data]);
 
   return <div ref={chartContainerRef} className="w-full" />;
 };
