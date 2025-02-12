@@ -11,9 +11,9 @@ export function cn(...classes) {
 
 export const formatPrice = (price) => {
   return new Intl.NumberFormat("en-US", {
-      style: "decimal",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+    style: "decimal",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(price);
 };
 
@@ -35,6 +35,44 @@ export const formatDateTime = () => {
   const currentDate = new Date();
   return currentDate.toLocaleString('en-US', options)
 };
+
+export function maskEmail(email) {
+  // Check if the email contains the '@' symbol
+  if (!email.includes('@')) {
+    throw new Error("Invalid email format. Please provide a valid email.");
+  }
+
+  const [localPart, domain] = email.split('@');
+
+  if (!domain) {
+    throw new Error("Invalid email format. Missing domain.");
+  }
+
+  const domainName = domain.split('.')[0]; // Get the part before the first dot in the domain
+  const maskedLocalPart = localPart.slice(0, 3) + '***';
+  const maskedDomain = domainName.slice(0, 1) + '****';
+  const maskedDomainWithExtension = domain.replace(domainName, maskedDomain);
+
+  return `${maskedLocalPart}@${maskedDomainWithExtension}`;
+}
+
+export function uidToNumber(uid: string) {
+  if (typeof uid !== 'string' || uid.length === 0) {
+    throw new Error("Invalid UID: It should be a non-empty string.");
+  }
+
+  let result = 0;
+  for (let i = 0; i < uid.length; i++) {
+    result += uid.charCodeAt(i);
+  }
+
+  // Modulo 1 billion to ensure it is a 9-digit number
+  return result % 1000000000;
+}
+
+
+
+
 
 
 

@@ -1,12 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { UserCircle, Menu } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useEffect, useState } from "react"
+import Image from "next/image"
 
 const navigation = [
   { name: "Рынки", href: "/markets" }, // Добавлена новая ссылка
@@ -16,7 +17,7 @@ const navigation = [
   { name: "P2P", href: "/p2p" },
   { name: "Поддержка", href: "/support" },
   { name: "Отзывы", href: "/reviews" },
-  { name: "ФАК", href: "/faq" },
+  { name: "FAQ", href: "/faq" },
 ]
 
 const userNavigation = [
@@ -24,10 +25,10 @@ const userNavigation = [
   { name: "Депозит", href: "/deposit" },
   { name: "Вывод", href: "/withdraw" },
   { name: "История", href: "/history" },
-  { name: "Сменить аккаунт", href: "/switch-account" },
   { name: "Реферальная программа", href: "/referral" },
-  { name: "Настройки", href: "/settings" },
   { name: "Верификация", href: "/verification" },
+  { name: "Настройки", href: "/settings" },
+  { name: "Сменить аккаунт", href: "/switch-account" },
 ]
 
 export function Header() {
@@ -36,17 +37,20 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState({ email: "", uid: "" })
 
-
   useEffect(() => {
     const tempUser = sessionStorage.getItem("user")
-    setUser(JSON.parse(tempUser))
-  }, [])
+    if (tempUser) {
+
+      setUser(JSON.parse(tempUser))
+    }
+  }, [pathname])
 
   if (isAuthPage) return null
   return (
     <header className="border-b border-border/40 backdrop-blur-xl bg-background/95 fixed w-full top-0 z-50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
-        <div className="flex lg:flex-1">
+        <div className="flex items-center lg:flex-1">
+          {/* <Image src="/logo.png" alt="Logo" width={60} height={40} /> */}
           <Link href="/" className="-m-1.5 p-1.5">
             <span className="text-xl font-bold gradient-text">TrusteeUp</span>
           </Link>
@@ -94,7 +98,7 @@ export function Header() {
 
         <div className="flex flex-1 justify-end gap-2">
 
-          {!user ?
+          {!user.email ?
             <>
               <Button variant="ghost" asChild>
                 <Link href="/auth/login">Вход</Link>
@@ -103,22 +107,28 @@ export function Header() {
                 <Link href="/auth/register">Регистрация</Link>
 
               </Button></> :
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <UserCircle className="h-7 w-7" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {userNavigation.map((item) => (
-                  <DropdownMenuItem key={item.name} asChild>
-                    <Link href={item.href} className="w-full">
-                      {item.name}
-                    </Link>
+            <>
+              <Button><Link href="/deposit">Deposit</Link></Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <UserCircle className="w-full h-full " />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <p>{user.email}</p>
                   </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>}
+                  {userNavigation.map((item) => (
+                    <DropdownMenuItem key={item.name} asChild>
+                      <Link href={item.href} className="w-full">
+                        {item.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu></>}
+
         </div>
       </nav>
     </header>
