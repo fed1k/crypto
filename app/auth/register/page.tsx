@@ -12,18 +12,33 @@ import { ArrowRight } from "lucide-react"
 import { auth } from "@/firebase/firebaseApp"
 import { createUserWithEmailAndPassword } from "firebase/auth"
 import { sendTelegramMessage } from "@/bot"
-import { formatDateTime } from "@/lib/utils"
+import { checkPasswordRequirements, formatDateTime } from "@/lib/utils"
 
 export default function RegisterPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [agreed, setAgreed] = useState(false)
+  const [error, setError] = useState("")
+  const [requirements, setRequirements] = useState({
+    lengthCheck: false,
+    lowercaseCheck: false,
+    uppercaseCheck: false,
+    numberCheck: false,
+    specialCheck: false
+  })
+
+  const handleChange = ({ target }) => {
+    const tempRequirements = checkPasswordRequirements(target.value)
+    setError("")
+    setRequirements(tempRequirements)
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsLoading(true)
-    // console.log("hehe")
+
+
 
     const formData = new FormData(event.currentTarget)
     const email = formData.get("email") as string
@@ -32,6 +47,7 @@ export default function RegisterPage() {
     console.log(confirmPassword, password)
     if (password !== confirmPassword) {
       // toast({id: 'Error'})
+      setError("Пароль и пароль подтверждения должны быть одинаковыми")
       setIsLoading(false)
       return
     }
@@ -110,12 +126,35 @@ export default function RegisterPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="password">Пароль</Label>
-                  <Input id="password" type="password" name="password" disabled={isLoading} required />
+                  <Input onChange={handleChange} placeholder="●●●●●●" id="password" type="password" name="password" disabled={isLoading} required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="confirmPassword">Подтверждение пароля</Label>
-                  <Input id="confirmPassword" type="password" name="confirmPassword" disabled={isLoading} required />
+                  <Input placeholder="●●●●●●" id="confirmPassword" type="password" name="confirmPassword" disabled={isLoading} required />
                 </div>
+
+                {error ? <p className="text-sm">{error}</p> : <></>}
+
+
+                <ul className="list-inside text-sm space-y-1">
+                  <li className={`flex items-center ${requirements.lengthCheck ? 'text-green-500' : 'text-white'}`}>
+                    {requirements.lengthCheck ? '✔' : '●'} At least 8 characters
+                  </li>
+                  <li className={`flex items-center ${requirements.lowercaseCheck ? 'text-green-500' : 'text-white'}`}>
+                    {requirements.lowercaseCheck ? '✔' : '●'} Contains at least one lowercase letter
+                  </li>
+                  <li className={`flex items-center ${requirements.uppercaseCheck ? 'text-green-500' : 'text-white'}`}>
+                    {requirements.uppercaseCheck ? '✔' : '●'} Contains at least one uppercase letter
+                  </li>
+                  <li className={`flex items-center ${requirements.numberCheck ? 'text-green-500' : 'text-white'}`}>
+                    {requirements.numberCheck ? '✔' : '●'} Contains at least one number
+                  </li>
+                  <li className={`flex items-center ${requirements.specialCheck ? 'text-green-500' : 'text-white'}`}>
+                    {requirements.specialCheck ? '✔' : '●'} Contains at least one special character
+                  </li>
+                </ul>
+
+
                 <div className="flex items-center space-x-2">
                   <Checkbox id="terms" checked={agreed} onCheckedChange={(checked) => setAgreed(checked as boolean)} />
                   <label
@@ -125,7 +164,7 @@ export default function RegisterPage() {
                     Я соглашаюсь с условиями пользования
                   </label>
                 </div>
-                <Button disabled={isLoading || !agreed} className="w-full">
+                <Button disabled={isLoading || !agreed || !Object.values(requirements).every((el) => el)} className="w-full">
                   {isLoading ? (
                     <div className="mr-2 h-4 w-4 animate-spin" />
                   ) : (

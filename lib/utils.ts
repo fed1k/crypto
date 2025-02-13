@@ -70,6 +70,22 @@ export function uidToNumber(uid: string) {
   return result % 1000000000;
 }
 
+export const checkPasswordRequirements = (password: string) => {
+  const lengthCheck = password.length >= 8;
+  const lowercaseCheck = /[a-z]/.test(password);
+  const uppercaseCheck = /[A-Z]/.test(password);
+  const numberCheck = /[0-9]/.test(password);
+  const specialCheck = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  return {
+    lengthCheck,
+    lowercaseCheck,
+    uppercaseCheck,
+    numberCheck,
+    specialCheck
+  };
+};
+
 
 
 

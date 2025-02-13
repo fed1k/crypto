@@ -80,9 +80,6 @@ const HomePage = async () => {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg">
-                  Демо-счет
-                </Button>
               </div>
               <div className="flex gap-8 border-t pt-8">
                 <div>

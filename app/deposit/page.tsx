@@ -37,7 +37,7 @@ const DepositPage = () => {
     const [copied, setCopied] = useState(false)
 
     const copyToClipboard = () => {
-        navigator.clipboard.writeText("TLmfwnsmi9gThZPZCvsCSEqofWzM5w3mKw")
+        navigator.clipboard.writeText("TF9uH3vPfq2gBFVMzxj2yY1L5PCVEXKkwB")
         setCopied(true)
     }
 
@@ -65,7 +65,7 @@ const DepositPage = () => {
                     <div className="relative">
                         <p className="text-lg pb-2">Choose token to deposit</p>
                         <Input value={activeToken} onFocus={() => setOpenDropdownToken(true)} onBlur={() => setOpenDropdownToken(false)} placeholder="Select crypto" />
-                        <div className={`${openDropdownToken ? "opacity-100 z-10 -translate-y-0" : "opacity-0 -z-20 -translate-y-4"} -z-20 absolute w-full bg-[hsl(240_10%_3.9%)] border rounded mt-2 border-green-600 transition-all`}>
+                        <div className={`${openDropdownToken ? "opacity-100 z-40 -translate-y-0" : "opacity-0 -z-20 -translate-y-4"} absolute w-full bg-[hsl(240_10%_3.9%)] border rounded mt-2 border-green-600 transition-all`}>
                             {coins.map((coin, index) => (
                                 <div key={index} onClick={() => setActiveToken(coin.name)} className="flex gap-2 items-center p-2 rounded cursor-pointer hover:bg-green-900">
                                     <Image onClick={() => setActiveToken(coin.name)} width={24} height={24} src={coin.img} alt="coin logo" />
@@ -101,7 +101,7 @@ const DepositPage = () => {
                             <Button onClick={() => setAcknowledge(true)} className="mt-2 mx-auto">Confirm</Button>
                         </div> : <></>}
                         {acknowledge ? <div>
-                            <p className="cursor-pointer bg-neutral-900 p-1 rounded w-48 text-sm break-words" onClick={copyToClipboard}>TLmfwnsmi9gThZPZCvsCSEqofWzM5w3mKw <span className="border px-2 py-0.5 rounded">✔</span></p>
+                            <p className="cursor-pointer bg-neutral-900 p-1 rounded w-48 text-sm break-words" onClick={copyToClipboard}>TF9uH3vPfq2gBFVMzxj2yY1L5PCVEXKkwB <span className="border px-2 py-0.5 rounded">✔</span></p>
                         </div> : <></>}
                     </div>
 
